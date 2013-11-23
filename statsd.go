@@ -6,8 +6,8 @@ import (
 )
 
 import (
-    "./servers"
-    "./metrics"
+    "./statsd/servers"
+    "./statsd/metrics"
 )
 
 func main() {
