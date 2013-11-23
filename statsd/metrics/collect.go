@@ -15,6 +15,24 @@ type StatsCollection struct {
     Sets map[string]map[string]interface{}
 }
 
+func NewStatsCollection (past *StatsCollection) *StatsCollection {
+
+    s := &StatsCollection{
+        Timers: make(map[string][]float64),
+        TimerCounters: make(map[string]float64),
+        Counters: make(map[string]float64),
+        Sets: make(map[string]map[string]interface{}),
+    }
+
+    if past != nil {
+        s.Gauges = past.Gauges
+    } else {
+        s.Gauges = make(map[string]float64)
+    }
+
+    return s
+}
+
 type MetricCollector interface {
     Flush()
 }
@@ -26,7 +44,7 @@ func NewMetricCollector(inbound <-chan *Metric, workers int) (MetricCollector, <
     p := metricCollectorStruct{
         inbound_metrics: inbound,
         outbound_stats: outbound,
-        stats: &StatsCollection{},
+        stats: NewStatsCollection(nil),
     }
 
     for i := 0; i < workers; i++ {
@@ -49,7 +67,7 @@ func (p metricCollectorStruct) Flush() {
         p.Lock()
 
         stats := p.stats
-        p.stats = &StatsCollection{}
+        p.stats = NewStatsCollection(stats)
 
         defer p.Unlock()
 
