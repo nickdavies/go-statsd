@@ -12,15 +12,12 @@ var whitespace = regexp.MustCompile(`\s+`)
 var slash = regexp.MustCompile(`/`)
 var notallowed = regexp.MustCompile(`[^a-zA-Z_\-0-9\.]`)
 
-// Validation Regex
-var number = regexp.MustCompile(`^([\d\.]+$)`)
-var signedNumber = regexp.MustCompile(`^([\-\+\d\.]+$)`)
-
 type MetricType string
 
 type Metric struct {
     Key string
     Value string
+    FloatValue float64
     Type MetricType
     SampleRate float64
 }
@@ -114,13 +111,10 @@ func parseMetric(key, rawMetric string) (*Metric, error) {
 
     switch metric.Type {
     case "s":
-    case "g":
-        if !signedNumber.MatchString(fields[0]) {
-            return nil, ValidationError{"Validation failed: guage value is not a number"}
-        }
     default:
-        if !number.MatchString(fields[0]) {
-            return nil, ValidationError{"Validation failed: value is not a number"}
+        metric.FloatValue, err = strconv.ParseFloat(fields[0], 64)
+        if err != nil {
+            return nil, ValidationError{"Validation failed: value is not a float"}
         }
     }
 
