@@ -15,7 +15,8 @@ type Config struct {
 }
 
 type Server interface {
-    Run (cfg Config) (inbound <-chan Packet, outbound chan<- Packet, err error)
+    Run (cfg Config) (inbound <-chan *Packet, outbound chan<- *Packet, err error)
+    DestroyPacket(p *Packet)
     Shutdown()
 }
 

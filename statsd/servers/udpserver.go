@@ -14,7 +14,7 @@ type udpServer struct {
     conn *net.UDPConn
 }
 
-func (s *udpServer) Run(cfg Config) (inbound <-chan Packet, outbound chan<- Packet, err error) {
+func (s *udpServer) Run(cfg Config) (inbound <-chan *Packet, outbound chan<- *Packet, err error) {
     addr, err := net.ResolveUDPAddr("udp", cfg.Address)
     if err != nil {
         return nil, nil, err
@@ -25,8 +25,8 @@ func (s *udpServer) Run(cfg Config) (inbound <-chan Packet, outbound chan<- Pack
         return nil, nil, err
     }
 
-    var raw_inbound = make(chan Packet)
-    var raw_outbound = make(chan Packet)
+    var raw_inbound = make(chan *Packet)
+    var raw_outbound = make(chan *Packet)
 
     // Send replies
     go func() {
@@ -56,7 +56,7 @@ func (s *udpServer) Run(cfg Config) (inbound <-chan Packet, outbound chan<- Pack
                 fmt.Println("RECV ERROR!", err)
             }
 
-            raw_inbound <- Packet{
+            raw_inbound <- &Packet{
                 client: retaddr,
                 Message: string(rawPacket[:n]),
             }
@@ -64,6 +64,10 @@ func (s *udpServer) Run(cfg Config) (inbound <-chan Packet, outbound chan<- Pack
     }()
 
     return raw_inbound, raw_outbound, nil
+}
+
+func (s *udpServer) DestroyPacket(p *Packet) {
+    // For udp theres no connection so this is a noop
 }
 
 func (s *udpServer) Shutdown() {
