@@ -105,8 +105,8 @@ func parseMetric(key, rawMetric string) (*Metric, error) {
             return nil, ValidationError{"Validation failed: sample rate is not a valid float"}
         }
 
-        if metric.SampleRate < 0 {
-            return nil, ValidationError{"Validation failed: sample rate is < 0"}
+        if metric.SampleRate <= 0 {
+            return nil, ValidationError{"Validation failed: sample rate is <= 0"}
         }
     } else {
         metric.SampleRate = 1
