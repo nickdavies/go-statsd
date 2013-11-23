@@ -15,28 +15,28 @@ type StatsCollection struct {
     Sets map[string]map[string]interface{}
 }
 
-type MetricProcessor interface {
+type MetricCollector interface {
     Flush()
 }
 
-func NewMetricProcessor(inbound <-chan *Metric, workers int) (MetricProcessor, <-chan *StatsCollection) {
+func NewMetricCollector(inbound <-chan *Metric, workers int) (MetricCollector, <-chan *StatsCollection) {
 
     outbound := make(chan *StatsCollection)
 
-    p := metricProcessorStruct{
+    p := metricCollectorStruct{
         inbound_metrics: inbound,
         outbound_stats: outbound,
         stats: &StatsCollection{},
     }
 
     for i := 0; i < workers; i++ {
-        go p.process()
+        go p.collect()
     }
 
     return p, outbound
 }
 
-type metricProcessorStruct struct {
+type metricCollectorStruct struct {
     sync.Mutex
 
     inbound_metrics <-chan *Metric
@@ -45,7 +45,7 @@ type metricProcessorStruct struct {
     stats *StatsCollection
 }
 
-func (p metricProcessorStruct) Flush() {
+func (p metricCollectorStruct) Flush() {
         p.Lock()
 
         stats := p.stats
@@ -56,7 +56,7 @@ func (p metricProcessorStruct) Flush() {
         p.outbound_stats <- stats
 }
 
-func (p metricProcessorStruct) process () {
+func (p metricCollectorStruct) collect () {
 
     for m := range p.inbound_metrics {
         p.Lock()
